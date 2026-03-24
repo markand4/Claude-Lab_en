@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Great Reversal – Group Presentation</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; overflow: hidden; }
+
+    /* ── Slide container ── */
+    #deck { width: 100vw; height: 100vh; position: relative; }
+
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 4rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    /* ── Colour themes per slide ── */
+    .slide-title   { background: linear-gradient(135deg, #1a1f35 0%, #0d1b2a 100%); }
+    .slide-overview{ background: linear-gradient(135deg, #0d1b2a 0%, #0a2540 100%); }
+    .slide-standout{ background: linear-gradient(135deg, #0a2540 0%, #0d2236 100%); }
+    .slide-q       { background: linear-gradient(135deg, #10181f 0%, #0a1520 100%); }
+
+    /* ── Decorative accent line ── */
+    .accent { width: 60px; height: 4px; border-radius: 2px; margin-bottom: 1.2rem; }
+    .blue   { background: #3b82f6; }
+    .green  { background: #22c55e; }
+    .amber  { background: #f59e0b; }
+    .rose   { background: #f43f5e; }
+    .violet { background: #a78bfa; }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.15; text-align: center; }
+    h2 { font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 700; margin-bottom: 1.2rem; }
+    .subtitle { font-size: clamp(1rem, 1.8vw, 1.3rem); color: #94a3b8; text-align: center; margin-top: .6rem; }
+    .label { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: #64748b; margin-bottom: .4rem; }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; gap: 1.1rem; width: 100%; max-width: 1000px; }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+    .card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      transition: background .25s, transform .2s;
+      cursor: default;
+    }
+    .card:hover { background: rgba(255,255,255,.09); transform: translateY(-2px); }
+    .card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; }
+    .card p, .card li { font-size: .88rem; color: #cbd5e1; line-height: 1.6; }
+    .card ul { padding-left: 1.1rem; }
+
+    /* ── Discussion question card ── */
+    .q-card {
+      background: rgba(255,255,255,.04);
+      border-left: 3px solid;
+      border-radius: 0 12px 12px 0;
+      padding: 1.1rem 1.4rem;
+      margin-bottom: .8rem;
+      max-width: 860px;
+      width: 100%;
+      transition: background .2s;
+    }
+    .q-card:hover { background: rgba(255,255,255,.08); }
+    .q-num { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .3rem; }
+    .q-card p { font-size: .92rem; color: #e2e8f0; line-height: 1.65; }
+
+    /* ── Stat callouts ── */
+    .stats { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+    .stat {
+      background: rgba(255,255,255,.06);
+      border-radius: 12px;
+      padding: 1rem 1.6rem;
+      text-align: center;
+      min-width: 130px;
+    }
+    .stat-num { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-desc { font-size: .75rem; color: #94a3b8; margin-top: .3rem; line-height: 1.4; }
+
+    /* ── Name badges ── */
+    .name-list { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; margin-top: 1.6rem; }
+    .name-badge {
+      background: rgba(59,130,246,.15);
+      border: 1px solid rgba(59,130,246,.3);
+      border-radius: 999px;
+      padding: .35rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #93c5fd;
+    }
+
+    /* ── Book chip ── */
+    .book-chip {
+      background: rgba(245,158,11,.12);
+      border: 1px solid rgba(245,158,11,.3);
+      color: #fcd34d;
+      border-radius: 6px;
+      padding: .25rem .7rem;
+      font-size: .78rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Navigation ── */
+    #nav {
+      position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%);
+      display: flex; gap: .6rem; align-items: center;
+      background: rgba(15,17,23,.85); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 999px; padding: .5rem 1.2rem;
+      z-index: 100;
+    }
+    .nav-btn {
+      background: none; border: none; color: #94a3b8;
+      font-size: 1.4rem; cursor: pointer; padding: .3rem .7rem; border-radius: 6px;
+      transition: color .2s, background .2s;
+    }
+    .nav-btn:hover { color: #e2e8f0; background: rgba(255,255,255,.08); }
+    #slide-counter { font-size: .8rem; color: #64748b; min-width: 50px; text-align: center; }
+
+    /* ── Dot indicators ── */
+    #dots { display: flex; gap: .45rem; align-items: center; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.2); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: #3b82f6; transform: scale(1.4); }
+
+    /* ── Swipe hint (mobile only) ── */
+    #hint {
+      position: fixed; top: 1rem; right: 1.4rem;
+      font-size: .72rem; color: #334155;
+      pointer-events: none;
+    }
+    @media (pointer: coarse) { #hint::after { content: 'Swipe to navigate'; } }
+    @media (pointer: fine)   { #hint::after { content: '← → arrow keys to navigate'; } }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .slide { padding: 1.2rem 1rem; overflow-y: auto; justify-content: flex-start; padding-top: 2rem; }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      h1 { font-size: clamp(1.5rem, 6vw, 2.2rem); }
+      h2 { font-size: clamp(1.1rem, 4vw, 1.5rem); }
+      .card p, .card li, .q-card p { font-size: .82rem; }
+      .stat-num { font-size: 1.5rem; }
+      #nav { bottom: 1rem; padding: .4rem .9rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- SLIDE 1: Title -->
+  <section class="slide slide-title active" id="s0">
+    <div class="accent blue"></div>
+    <div class="book-chip">The Great Reversal — Philippon</div>
+    <h1>American Markets,<br>Market Power &amp; the<br>Collapse of Competition</h1>
+    <p class="subtitle">Chapters 1–3 &nbsp;·&nbsp; Group Presentation</p>
+    <div class="name-list">
+      <span class="name-badge">Mark Kurpiel</span>
+      <span class="name-badge">Taylor Dalton</span>
+      <span class="name-badge">Joseph Reed</span>
+      <span class="name-badge">Mohamad Ghannoum</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: The Central Argument -->
+  <section class="slide slide-overview" id="s1">
+    <div class="accent green"></div>
+    <p class="label">Overview · The Big Picture</p>
+    <h2>The Central Argument</h2>
+    <div class="card-grid" style="max-width:860px; grid-template-columns:1fr;">
+      <div class="card">
+        <h3>📌 The Reversal</h3>
+        <p>The US used to be the global benchmark for competitive markets — cheaper internet, cheaper flights, cheaper phone service than Europe. <strong>Sometime around 2000, that flipped.</strong> Americans now pay nearly double what Europeans pay for broadband.</p>
+      </div>
+      <div class="card">
+        <h3>📌 The Cause</h3>
+        <p>Philippon argues this is <strong>not</strong> driven by globalization or technology. It is a domestic political failure — decades of corporate lobbying systematically weakened the enforcement mechanisms meant to protect competition.</p>
+      </div>
+      <div class="card">
+        <h3>📌 The Stakes</h3>
+        <p>US consumers lose an estimated <strong>$65 billion per year</strong> on mobile service alone relative to German consumers. Rising profit margins — from 6–7% of GDP to ~10% — represent a structural shift flowing to shareholders, not workers.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: Chapter-by-Chapter -->
+  <section class="slide slide-overview" id="s2">
+    <div class="accent green"></div>
+    <p class="label">Overview · Chapter Breakdown</p>
+    <h2>What Each Chapter Does</h2>
+    <div class="card-grid three-col" style="max-width:1000px;">
+      <div class="card">
+        <h3>Intro + Ch. 1 — Why Competition Matters</h3>
+        <p>Sets up the puzzle: the US was once the competitive benchmark. Ch. 1 makes the economic case — competition lowers prices, raises wages, encourages investment, and reduces inequality.</p>
+      </div>
+      <div class="card">
+        <h3>Ch. 2 — The Measurement Problem</h3>
+        <p>Not all concentration is bad. Walmart dominance → prices fell 30%. The chapter introduces the tools: <strong>HHI index, profit margins, price trends</strong>. Key lesson: you need all three moving together before you can judge.</p>
+      </div>
+      <div class="card">
+        <h3>Ch. 3 — The Evidence</h3>
+        <p>Concentration has risen in &gt;75% of US industries since the late 1990s. Probability of a top firm being displaced in 3 years dropped from <strong>45% → 30%</strong>. Six competing explanations are tested; “decreasing domestic competition” wins.</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" style="color:#22c55e;">75%+</div><div class="stat-desc">of US industries more<br>concentrated since 1990s</div></div>
+      <div class="stat"><div class="stat-num" style="color:#f59e0b;">$65B</div><div class="stat-desc">annual consumer loss<br>on mobile alone</div></div>
+      <div class="stat"><div class="stat-num" style="color:#f43f5e;">45→30%</div><div class="stat-desc">chance top firm is<br>displaced in 3 years</div></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: What Stood Out -->
+  <section class="slide slide-standout" id="s3">
+    <div class="accent amber"></div>
+    <p class="label">Analysis · What Stood Out</p>
+    <h2>Interesting, Surprising &amp; Debatable</h2>
+    <div class="card-grid two-col" style="max-width:1000px;">
+      <div class="card">
+        <h3>🌍 Surprising — The Europe Flip</h3>
+        <p>We assume European markets are sluggish and over-regulated. Philippon flips it with data: European consumers get <strong>cheaper, faster internet</strong> and more competitive airline markets. France’s Free Mobile entered in 2011 and cut average prices by <strong>40% in six months</strong>. The US never got that moment.</p>
+      </div>
+      <div class="card">
+        <h3>⚖️ Interesting — Profits ≠ Efficiency</h3>
+        <p>Philippon is not anti-profit. The critical distinction is <em>profit from efficiency</em> vs. <em>profit from market power (rent extraction)</em>. Walmart’s dominance was pro-consumer. Amazon’s is murkier — it hasn’t cut prices the same way and the Diapers.com story raises predatory pricing concerns.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Also Surprising — Entrenchment Data</h3>
+        <p>Every CEO says “competition has never been tougher.” The persistence data says the opposite — <strong>market leaders are more entrenched today</strong> than 20 years ago, not less. It is now substantially easier to predict who the market leader will be in 5 years.</p>
+      </div>
+      <div class="card">
+        <h3>🔁 Worth Pushing Back On</h3>
+        <p>Some economists argue rising markups reflect <strong>intangible capital</strong> (software, brand value) not anti-competitive behavior. The “superstar firms” explanation is dismissed but not universally rejected. And the Amazon section feels unresolved — does his framework fully capture harm via <em>foreclosed future competition</em>?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: Q1 -->
+  <section class="slide slide-q" id="s4">
+    <div class="accent blue"></div>
+    <p class="label">Discussion · Question 1 of 5</p>
+    <h2 style="text-align:center; max-width:800px;">The Amazon Problem</h2>
+    <div class="q-card" style="border-color:#3b82f6;">
+      <div class="q-num" style="color:#3b82f6;">Question 1</div>
+      <p>Walmart dominating retail in the 90s was fine because prices dropped. Airlines post-2010 — bad concentration. So where does <strong>Amazon</strong> land? It hasn’t cut prices the way Walmart did, it killed Diapers.com through what looks like predatory pricing, and regulators let it happen. Is Amazon a <em>superstar firm</em> or the next AT&amp;T? And does Philippon’s framework even give you the tools to tell the difference?</p>
+    </div>
+    <div class="card-grid two-col" style="max-width:860px; margin-top:.6rem;">
+      <div class="card"><h3>Superstar Firm View</h3><p>Amazon built genuinely superior logistics, Prime ecosystem, and AWS. Consumers choose it freely. Dominance earned through innovation.</p></div>
+      <div class="card"><h3>Market Power View</h3><p>Predatory pricing to eliminate rivals, then leveraging dominance. Harm isn’t higher prices <em>today</em> — it’s foreclosed competition <em>tomorrow</em>.</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: Q2 -->
+  <section class="slide slide-q" id="s5">
+    <div class="accent violet"></div>
+    <p class="label">Discussion · Question 2 of 5</p>
+    <h2 style="text-align:center; max-width:800px;">Genius or Gatekeeper?</h2>
+    <div class="q-card" style="border-color:#a78bfa;">
+      <div class="q-num" style="color:#a78bfa;">Question 2</div>
+      <p>Google, Amazon, Meta — these companies built real things. So is their market dominance because they are <em>that good</em>, or because they made it impossible for anyone else to compete? And the harder version: <strong>can both be true at the same time?</strong> If yes — what does smart policy even look like?</p>
+    </div>
+    <div class="card-grid two-col" style="max-width:860px; margin-top:.6rem;">
+      <div class="card"><h3>Why the Distinction Matters</h3><p>Policy response differs entirely. If it’s genuine innovation, intervention risks destroying value. If it’s market power, inaction destroys value and transfers it upward to shareholders.</p></div>
+      <div class="card"><h3>The Hard Policy Question</h3><p>If both are true simultaneously — break up the firm and lose scale efficiencies, or regulate it like a utility and risk stifling innovation?</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: Q3 -->
+  <section class="slide slide-q" id="s6">
+    <div class="accent green"></div>
+    <p class="label">Discussion · Question 3 of 5</p>
+    <h2 style="text-align:center; max-width:800px;">The Europe Comparison</h2>
+    <div class="q-card" style="border-color:#22c55e;">
+      <div class="q-num" style="color:#22c55e;">Question 3</div>
+      <p>We always hear Europe is over-regulated, slow, anti-innovation. But Philippon shows Europe is <strong>more competitive</strong> than the US in telecom, internet, and airlines. So either the story we’ve been told about Europe is wrong — or there’s something specific about how the US went off the rails that isn’t about regulation at all. <strong>Which is it?</strong> And does that change what you think the US needs to fix?</p>
+    </div>
+    <div class="card-grid two-col" style="max-width:860px; margin-top:.6rem;">
+      <div class="card"><h3>Possible Explanation A</h3><p>European antitrust enforcement remained stricter and less captured by lobbying. The US narrative about European sluggishness was always ideological, not empirical.</p></div>
+      <div class="card"><h3>Possible Explanation B</h3><p>The US uniquely allowed corporate political spending to hollow out competition enforcement — a problem specific to US campaign finance, not regulation per se.</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: Q4 -->
+  <section class="slide slide-q" id="s7">
+    <div class="accent amber"></div>
+    <p class="label">Discussion · Question 4 of 5</p>
+    <h2 style="text-align:center; max-width:800px;">Regulatory Capture</h2>
+    <div class="q-card" style="border-color:#f59e0b;">
+      <div class="q-num" style="color:#f59e0b;">Question 4</div>
+      <p>Regulatory capture describes a situation where industries influence the agencies meant to oversee them. <strong>Can you think of current examples beyond the ones Philippon cites?</strong> Is there a structural way to prevent this — or is it an inevitable feature of democratic governance with powerful private interests?</p>
+    </div>
+    <div class="card-grid two-col" style="max-width:860px; margin-top:.6rem;">
+      <div class="card"><h3>The Capture Mechanism</h3><p>The problem can’t easily be fixed within the current political system — because that system has been compromised by the very firms that benefit from weak competition enforcement.</p></div>
+      <div class="card"><h3>Campaign Finance Link</h3><p>Philippon argues corporate political spending is a root cause of declining competition. Are antitrust and campaign finance actually the same issue at different levels?</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: Q5 -->
+  <section class="slide slide-q" id="s8">
+    <div class="accent rose"></div>
+    <p class="label">Discussion · Question 5 of 5</p>
+    <h2 style="text-align:center; max-width:800px;">Why Don’t Markets Self-Correct?</h2>
+    <div class="q-card" style="border-color:#f43f5e;">
+      <div class="q-num" style="color:#f43f5e;">Question 5</div>
+      <p>If rising market concentration is harming consumers <em>and</em> workers, why haven’t market forces corrected this? <strong>Why haven’t new competitors entered these industries to capture those profits?</strong> What structural barriers prevent the textbook competitive response?</p>
+    </div>
+    <div class="card-grid two-col" style="max-width:860px; margin-top:.6rem;">
+      <div class="card"><h3>Barriers to Entry</h3><ul><li>Network effects lock in incumbents</li><li>Regulatory barriers raised by lobbying</li><li>Capital requirements and patent walls</li><li>Incumbents acquire would-be rivals early</li></ul></div>
+      <div class="card"><h3>The Deeper Issue</h3><p>If the market can’t self-correct and political channels are captured, what legitimate levers remain? This is where Philippon’s argument is most radical — and most uncomfortable.</p></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 10: Closing -->
+  <section class="slide slide-title" id="s9">
+    <div class="accent blue"></div>
+    <h1 style="font-size: clamp(1.6rem, 3vw, 2.4rem); margin-bottom:1rem;">Thank You</h1>
+    <p class="subtitle" style="max-width:640px;">The Great Reversal argues that the US doesn’t have a market problem — it has a <em>politics</em> problem. Competition policy is broken not by accident, but by design of the interests that benefit from its failure.</p>
+    <div class="stats" style="margin-top:2rem;">
+      <div class="stat"><div class="stat-num" style="color:#3b82f6;">5</div><div class="stat-desc">Discussion<br>Questions</div></div>
+      <div class="stat"><div class="stat-num" style="color:#22c55e;">3</div><div class="stat-desc">Chapters<br>Covered</div></div>
+      <div class="stat"><div class="stat-num" style="color:#f59e0b;">~20</div><div class="stat-desc">Minutes of<br>Discussion</div></div>
+    </div>
+    <div class="name-list" style="margin-top:2rem;">
+      <span class="name-badge">Mark Kurpiel</span>
+      <span class="name-badge">Taylor Dalton</span>
+      <span class="name-badge">Joseph Reed</span>
+      <span class="name-badge">Mohamad Ghannoum</span>
+    </div>
+  </section>
+
+</div>
+
+<!-- Navigation -->
+<nav id="nav">
+  <button class="nav-btn" id="prev" title="Previous">&#8592;</button>
+  <div id="dots"></div>
+  <span id="slide-counter">1 / 10</span>
+  <button class="nav-btn" id="next" title="Next">&#8594;</button>
+</nav>
+<div id="hint"></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const counter = document.getElementById('slide-counter');
+  const dotsEl  = document.getElementById('dots');
+  let current = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${slides.length}`;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('next').addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+  });
+
+  // Touch / swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) dx < 0 ? goTo(current + 1) : goTo(current - 1);
+  }, { passive: true });
+</script>
+</body>
+</html>

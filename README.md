@@ -4,7 +4,7 @@ Interactive slide deck for our class presentation on Philippon's *The Great Reve
 
 ## Live Link
 
-**[https://markand4.github.io/claude-lab_en/](https://markand4.github.io/claude-lab_en/)**
+**[https://markand4.github.io/Claude-Lab_en/](https://markand4.github.io/Claude-Lab_en/)**
 
 Open on any device — phone, tablet, or desktop. No app or install required.
 
